@@ -50,6 +50,12 @@ def scrape_game(page, game_id: str) -> pd.DataFrame:
     # because we explicitly wait for the table selector below.
     page.goto(url, wait_until="domcontentloaded")
 
+    # Some Cloudflare challenges appear only after landing on the specific
+    # game page rather than on the site homepage. Give the user a second
+    # manual checkpoint here before we start waiting for the table.
+    input("If a Cloudflare check appears on the game page, solve it in the "
+          "browser, then press Enter here to continue... ")
+
     # The table is built client-side from a JS template, so it does not exist
     # in the initial HTML. Wait for at least one row to be inserted before
     # trying to read the table. 60 seconds gives Cloudflare time to clear
