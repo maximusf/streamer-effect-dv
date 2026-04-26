@@ -1,0 +1,615 @@
+/* ============================================================
+   The Streamer Effect — stylesheet
+
+   Design direction: editorial / data-journalism. Inspired by
+   long-form data pieces from publications like The Pudding and
+   the NYT Upshot. The goal is for the page to read like an
+   article that happens to contain interactive charts, not like
+   a dashboard.
+
+   Color philosophy: warm off-white background and ink-black text
+   for a paper-like feel. Per-game color (from d3.schemeSet2) is
+   the only saturated color on the page; everything else is
+   neutrals. This puts the charts visually front and center
+   without competing for attention.
+============================================================ */
+
+
+/* CSS variables let us tune the palette in one place and let JS
+   read these values when needed (e.g. for chart axis colors). */
+:root {
+  --bg: #fafaf7;            /* warm off-white, like paper */
+  --bg-alt: #f0eee8;        /* slightly darker for inset blocks */
+  --ink: #1a1a1a;           /* near-black for body text */
+  --ink-soft: #4a4a4a;      /* secondary text */
+  --ink-faint: #8a8a8a;     /* tertiary text, axis labels */
+  --rule: #d8d4cc;          /* hairline rules and dividers */
+
+  /* Game colors, mapped from d3.schemeSet2.
+     We mirror these in JS so SVG strokes and CSS borders match. */
+  --c-fall-guys: #fc8d62;
+
+  --max-col: 720px;         /* max content width for readable line length */
+}
+
+
+/* ---------- reset and base ---------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.65;
+  /* Subtle paper texture: a noisy radial gradient that adds warmth
+     without becoming visually busy. Fallback to plain bg if not
+     supported. */
+  background-image:
+    radial-gradient(ellipse at top left, rgba(252, 248, 240, 0.7), transparent 40%),
+    radial-gradient(ellipse at bottom right, rgba(248, 244, 235, 0.6), transparent 50%);
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--c-fall-guys); /* orange accent on hover */
+}
+
+
+/* ---------- article layout ---------- */
+
+.article {
+  max-width: var(--max-col);
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+}
+
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2rem;
+  margin-bottom: 3rem;
+}
+
+.kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 1.5rem;
+}
+
+.title {
+  font-family: 'Fraunces', Georgia, serif;
+  /* Optical-size axis: at very large sizes Fraunces draws sharper,
+     more dramatic letterforms, which gives the headline a magazine
+     feel rather than just being big text. */
+  font-variation-settings: 'opsz' 144;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+
+.dek {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 36;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin: 0 0 2rem;
+  max-width: 32em;
+}
+
+.byline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+
+/* ---------- article body text ---------- */
+
+.lede p,
+.viz-prose {
+  margin: 0 0 1.25rem;
+  max-width: 36em;
+}
+
+/* Drop cap on the first paragraph of the lede, classic editorial move. */
+.lede > p:first-child::first-letter {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 144;
+  font-weight: 700;
+  font-size: 4.5rem;
+  line-height: 0.85;
+  float: left;
+  padding: 0.4rem 0.6rem 0 0;
+  color: var(--ink);
+}
+
+
+/* ---------- visualization sections ---------- */
+
+.viz-section {
+  margin: 4rem 0;
+}
+
+.viz-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 60;
+  font-weight: 600;
+  font-size: 1.8rem;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+  /* Subtle counter-style numbering effect via the explicit "1." in
+     the heading text; no list-style needed. */
+}
+
+.viz-prose {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  margin-bottom: 2rem;
+}
+
+/* ---------- viz controls (dropdown + toggle) ---------- */
+
+.viz-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 2rem;
+}
+
+.viz-controls label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.viz-controls select {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  padding: 0.3rem 0.5rem 0.3rem 0;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.viz-controls select:focus {
+  outline: none;
+  border-bottom-color: var(--c-fall-guys);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  /* Override the uppercase styling on the label inside .toggle so the
+     toggle reads as a checkbox label rather than a control heading. */
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: 'Source Serif 4', Georgia, serif !important;
+  font-size: 0.95rem !important;
+  color: var(--ink-soft) !important;
+}
+
+.toggle input[type="checkbox"] {
+  /* Use the system checkbox; the editorial style works with the
+     default look here. Add a tiny accent color to align with theme. */
+  accent-color: var(--ink);
+}
+
+
+/* ---------- chart container ---------- */
+
+.chart {
+  position: relative;
+  width: 100%;
+  /* The SVG inside is responsive; this just gives the container a
+     reasonable minimum height while data loads. */
+  min-height: 420px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible; /* let labels and tooltips spill outside */
+}
+
+
+/* ---------- chart internal styling ---------- */
+
+/* Axis lines and ticks: fine, light, like newspaper rules. */
+.chart .axis path,
+.chart .axis line {
+  stroke: var(--rule);
+  shape-rendering: crispEdges;
+}
+
+.chart .axis text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  fill: var(--ink-faint);
+}
+
+/* Series lines: thicker than D3's default for editorial weight. */
+.chart .series-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* The Steam line is dashed and the Trends line is dotted, all in the
+   same per-game color. Distinguishes the three series by line style
+   rather than color, which lets us reuse the per-game color identity
+   across all four visualizations. */
+.chart .series-twitch  { stroke-dasharray: none;  }
+.chart .series-steam   { stroke-dasharray: 6 4;   }
+.chart .series-trends  { stroke-dasharray: 1 4;   stroke-width: 2; }
+
+/* Series labels are no longer drawn next to each line in this
+   visualization; the collapsible legend in the top-right corner
+   (see .chart-legend below) replaces them. The CSS rule that used
+   to style .series-label has been removed. */
+
+/* Streamer event markers: small open circles on the timeline. */
+.chart .event-marker {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.chart .event-marker:hover {
+  fill: var(--ink);
+}
+
+/* Hover guideline: vertical line that follows the cursor. */
+.chart .hover-line {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  pointer-events: none;
+}
+
+
+/* ---------- viz 2: lag timeline ---------- */
+
+/* Game labels on the left side of each row. Larger and bolder than
+   axis text since they are the chart's primary categorical labels.
+   Sized up to match the proportionally larger chart frame. */
+.chart .game-label {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 36;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Lag-day callout text drawn next to each row's Steam-peak marker.
+   Monospace so the day numbers align visually if the reader scans
+   the column. */
+.chart .lag-callout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Inline legend swatches at the top of the chart. Smaller and
+   quieter than the lag callouts since they are reference, not
+   data. */
+.chart .viz2-legend .legend-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  fill: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.chart .row-hit {
+  cursor: pointer;
+}
+
+
+/* ---------- viz 4: post-peak Steam player growth ---------- */
+
+/* Game labels along the x-axis. Same Fraunces serif treatment as
+   the row labels in viz 2 for consistency. */
+.chart .x-game-label {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 36;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Per-bar percent annotation: large, in the game's color, sits
+   above each bar. The primary visual emphasis on the chart. */
+.chart .annot-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Per-bar context line: smaller, quieter, gives the raw player
+   counts that contextualize the percent. */
+.chart .annot-context {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+/* Subtle hover state on the bars. Filled bars brighten, the
+   pre-launch outline thickens. */
+.chart .growth-bar {
+  cursor: pointer;
+  transition: opacity 0.15s ease, stroke-width 0.15s ease;
+}
+
+.chart .growth-bar:hover {
+  opacity: 1;
+}
+
+.chart .growth-bar.pre-launch:hover {
+  stroke-width: 3;
+}
+
+
+/* ---------- viz 3: per-month scatter ---------- */
+
+/* Scatter dot hover state. Smooth transition between sizes makes
+   the hover feel responsive without distracting from the chart. */
+.chart .scatter-dot {
+  transition: r 0.1s ease, opacity 0.1s ease;
+}
+
+/* Trend lines drawn over the scatter cloud. */
+.chart .trend-line {
+  pointer-events: none;
+}
+
+/* In-chart legend for the per-game color mapping. Smaller and
+   quieter than the viz 2 legend because it sits inside the plot
+   area rather than above it. */
+.chart .viz3-legend-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  fill: var(--ink);
+}
+
+/* Regression-fit statistics drawn in the top-right of the chart.
+   Right-aligned because they are read as supplementary
+   information rather than primary content. */
+.chart .fit-stats-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+/* The legend is a <details>/<summary> widget absolutely positioned
+   over the top-right of the chart container. Closed by default;
+   clicking "Key" expands it to reveal the three series rows.
+   Styled to read as a small marginal note rather than a boxed
+   dashboard widget, which fits the editorial page aesthetic. */
+.chart-legend {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  background: var(--bg);
+  /* Hairline border on left and bottom only, like a dog-eared
+     reference card. Less visual weight than a full border box. */
+  border-left: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 10px 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink);
+  user-select: none;
+  /* min-width keeps the closed and open states roughly the same
+     width so the widget does not visually jump on toggle. */
+  min-width: 120px;
+}
+
+.legend-summary {
+  cursor: pointer;
+  list-style: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Hide the default disclosure triangle that some browsers render. */
+.legend-summary::-webkit-details-marker { display: none; }
+.legend-summary::marker { content: ''; }
+
+.legend-caret {
+  font-size: 0.7rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  color: var(--ink-faint);
+}
+
+.chart-legend[open] .legend-caret {
+  transform: rotate(180deg);
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  /* Prevent labels from wrapping to a second line. The widget
+     widens to accommodate the longest label rather than wrapping. */
+  white-space: nowrap;
+}
+
+/* Force the swatch SVG to its declared dimensions. Without this,
+   the parent flex container stretches it and the thin line preview
+   blooms into a thick blob. */
+.legend-swatch-svg {
+  width: 24px !important;
+  height: 8px !important;
+  flex: 0 0 auto;
+}
+
+.legend-label {
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+
+.tooltip {
+  position: absolute;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.65rem 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  /* No border radius — keeps the editorial feel. */
+  max-width: 240px;
+  z-index: 100;
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+.tooltip .tt-date {
+  color: var(--ink-faint);
+  font-size: 0.7rem;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tooltip .tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.tooltip .tt-label {
+  opacity: 0.7;
+}
+
+.tooltip .tt-value {
+  font-weight: 500;
+}
+
+
+/* ---------- event panel (annotation detail) ---------- */
+
+.event-panel {
+  position: relative;
+  margin-top: 2rem;
+  padding: 1.5rem 2rem;
+  background: var(--bg-alt);
+  border-left: 3px solid var(--ink);
+}
+
+.event-panel[hidden] {
+  display: none;
+}
+
+.event-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.event-close:hover {
+  color: var(--ink);
+}
+
+.event-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin: 0 0 0.25rem;
+}
+
+.event-streamer {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'opsz' 36;
+  font-weight: 600;
+  font-size: 1.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.event-text {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.event-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+
+/* ---------- footer ---------- */
+
+.article-footer {
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  .article { padding: 2rem 1rem 4rem; }
+  .viz-controls { gap: 1rem; }
+}
