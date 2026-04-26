@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Streamer Effect</title>
+
+<!-- Editorial typography: Fraunces for display headlines (serif with optical
+     sizing makes large display sizes feel like a magazine masthead), and
+     JetBrains Mono for any data labels and numbers (gives the chart text a
+     deliberate, technical feel). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,300..700&display=swap" rel="stylesheet">
+
+<!-- D3 from CDN. Pinned to v7 for stability. -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Article-style layout: a long-form data piece, not a dashboard.
+     The visualizations are embedded between blocks of narrative the way
+     a newspaper data story would lay them out. This satisfies the rubric
+     requirement for "appropriate context (e.g., text or external links)
+     for the viewer to understand the story." -->
+
+<article class="article">
+
+  <header class="masthead">
+    <p class="kicker">Visualization Tools &middot; CSCE 567</p>
+    <h1 class="title">The Streamer Effect</h1>
+    <p class="dek">How four games went from obscurity to mainstream, one Twitch stream at a time.</p>
+    <p class="byline">Maximus Fernandez &middot; April 2026</p>
+  </header>
+
+  <section class="lede">
+    <p>
+      Before 2020, getting a video game to break through to mainstream
+      audiences usually required marketing budgets, press coverage, and
+      months of word of mouth. Indie games without those resources
+      often stayed niche regardless of their quality.
+    </p>
+    <p>
+      Then live streaming changed the rules. Across four breakout
+      titles &mdash; Among Us, Fall Guys, Vampire Survivors, and Lethal
+      Company &mdash; the same pattern keeps appearing in the data: a
+      Twitch viewership spike, then weeks later, a Steam player count
+      surge to match. The streamers showed up first, the players
+      followed.
+    </p>
+    <p>
+      The rest of this piece walks through the evidence.
+    </p>
+  </section>
+
+  <!-- Visualization 1: per-game timeline.
+       Reads master.csv. Lets the reader pick one game at a time and see
+       Twitch viewership, Steam players, and Google Trends interest as
+       three normalized lines on a shared timeline. Streamer event
+       annotations are overlaid as markers from streamer_events.csv. -->
+  <section class="viz-section" id="viz1">
+    <h2 class="viz-title">1. The pattern, one game at a time</h2>
+    <p class="viz-prose">
+      Each of the four case-study games tells a similar story. Pick a
+      game below. The three lines show Twitch viewership, Steam player
+      counts, and Google search interest, each rescaled to its own peak
+      so the timing relationships are visible side-by-side. Markers on
+      the timeline highlight specific streamer moments that drove the
+      hype.
+    </p>
+
+    <div class="viz-controls">
+      <label for="viz1-game">Game</label>
+      <select id="viz1-game">
+        <option value="among_us">Among Us</option>
+        <option value="fall_guys">Fall Guys</option>
+        <option value="vampire_survivors">Vampire Survivors</option>
+        <option value="lethal_company">Lethal Company</option>
+      </select>
+
+      <label class="toggle">
+        <input type="checkbox" id="viz1-fullhistory">
+        Show full history
+      </label>
+    </div>
+
+    <div id="viz1-chart" class="chart"></div>
+
+    <!-- Annotation detail panel: when the user clicks a streamer event
+         marker, this panel populates with the event details and a link
+         to the source. -->
+    <aside id="viz1-event-panel" class="event-panel" hidden>
+      <button class="event-close" id="viz1-event-close" aria-label="Close">&times;</button>
+      <p class="event-date" id="viz1-event-date"></p>
+      <h3 class="event-streamer" id="viz1-event-streamer"></h3>
+      <p class="event-text" id="viz1-event-text"></p>
+      <a class="event-link" id="viz1-event-link" target="_blank" rel="noopener">Read source &rarr;</a>
+    </aside>
+  </section>
+
+  <!-- Placeholder sections for visualizations 2, 3, 4. The narrative
+       text and chart containers will be filled in as those vizs are
+       built. Keeping them stubbed here preserves the article structure
+       so the reading flow is visible from the start. -->
+  <!-- Visualization 2: lag timeline.
+       Reads lag_summary.csv. Shows the timing relationship between
+       Twitch peak and Steam peak for each game on a single shared
+       calendar axis from 2018 to 2026. Each game gets one row;
+       within each row, two markers (Twitch peak, Steam peak) are
+       connected by a horizontal bar whose width is the lag in days.
+       A callout to the right of each row prints the lag in
+       human-readable form because the bars themselves are tiny on
+       an 8-year axis. -->
+  <section class="viz-section" id="viz2">
+    <h2 class="viz-title">2. The lag, generalized across all four games</h2>
+    <p class="viz-prose">
+      The pattern from one game holds across all four. In every
+      case, Twitch viewership peaked before Steam player counts
+      did, and the gap was tight: between 30 and 62 days. The chart
+      below places each game on a shared calendar so the viral
+      moments are visible in their actual historical sequence,
+      from Among Us in 2020 to Lethal Company in 2023.
+    </p>
+
+    <div id="viz2-chart" class="chart"></div>
+  </section>
+
+  <!-- Visualization 4: post-peak Steam player growth.
+       Reads growth_summary.csv. One vertical bar per game on a
+       log y-axis showing the percent increase in Steam player
+       count in the month immediately following each game's
+       Twitch viewership peak. The Fall Guys bar is rendered
+       differently because that game's Twitch peak preceded its
+       Steam launch entirely (no baseline, growth undefined).
+       Bars carry annotations showing the raw before/after player
+       counts so the reader can contextualize the percentages
+       (a 423,750% jump from 12 to 50,862 players is a different
+       phenomenon from a 177% jump from 38,932 to 107,668). -->
+  <section class="viz-section" id="viz4">
+    <h2 class="viz-title">3. The magnitude of the surge</h2>
+    <p class="viz-prose">
+      Lag tells us when. Magnitude tells us how big. The chart
+      below shows the percent increase in Steam player count in
+      the month right after each game's Twitch viewership peak.
+      The y-axis is logarithmic because the ranges differ by
+      thousands of times, from Lethal Company's already-large
+      177% growth to Vampire Survivors going from twelve players
+      to over fifty thousand. Fall Guys is shown separately:
+      its Twitch viewership peaked an entire month before the
+      game was even available on Steam, so the baseline is
+      effectively zero.
+    </p>
+
+    <div id="viz4-chart" class="chart"></div>
+  </section>
+
+  <!-- Visualization 3: per-month scatter plot.
+       Reads master.csv. Plots every (game, month) pair where
+       both Twitch viewers and Steam players are non-null. Color
+       per game. Log-log axes because both metrics span four
+       orders of magnitude across the dataset. A trend line
+       (pooled by default, with a "split by game" toggle)
+       quantifies the relationship. This is the "validation at
+       scale" chart: if the streamer effect is real, dots should
+       trend up and to the right. -->
+  <section class="viz-section" id="viz3">
+    <h2 class="viz-title">4. The relationship at the per-month level</h2>
+    <p class="viz-prose">
+      The first three charts told the story at the peak-month
+      level. This one goes deeper: every single month of every
+      game becomes a single dot, plotting that month's Twitch
+      viewership against its Steam player count. Because the
+      values span four orders of magnitude, both axes are
+      logarithmic. If the streamer effect were just a coincidence
+      of the peak months, the dots would scatter randomly. They
+      do not. They trend cleanly up and to the right, with a
+      strong correlation that holds whether we fit one line
+      across all games or one per game.
+    </p>
+
+    <div class="viz-controls">
+      <label class="toggle">
+        <input type="checkbox" id="viz3-split">
+        Split trend line by game
+      </label>
+    </div>
+
+    <div id="viz3-chart" class="chart"></div>
+  </section>
+
+  <footer class="article-footer">
+    <p>
+      Built with D3.js for CSCE 567 (Visualization Tools). Data
+      from TwitchTracker, SteamDB, and Google Trends.
+      <a href="https://github.com/maximusf/CSCE567_Data_Visualization_Project" target="_blank" rel="noopener">Source on GitHub</a>.
+    </p>
+  </footer>
+
+</article>
+
+<script src="main.js"></script>
+
+</body>
+</html>
