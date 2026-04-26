@@ -9,6 +9,7 @@ Final project for CSCE 567 (Data Visualization). Argues that Twitch viewership s
 - **TwitchTracker** - monthly viewership stats. Manually collected (no CSV export).
 - **SteamDB** - monthly concurrent player stats. CSV export per game.
 - **Google Trends** - monthly search interest. CSV export per game, date range chosen per game to preserve normalization.
+- **Streamer events** - hand-curated, sourced from news articles. Used for clickable annotations on viz 1.
 
 Raw files live in `data/raw/`. Cleaned files land in `data/clean/`.
 
@@ -19,7 +20,7 @@ Raw files live in `data/raw/`. Cleaned files land in `data/clean/`.
 ├── data/
 │   ├── raw/            # source CSVs (manual + downloads)
 │   └── clean/          # cleaned + merged outputs
-├── viz/                # D3.js single-page app
+├── web/                # D3.js single-page site
 ├── clean_twitch.py     # cleans TwitchTracker CSVs
 ├── clean_steam.py      # cleans SteamDB CSVs
 ├── clean_google.py     # cleans Google Trends CSVs
@@ -48,16 +49,15 @@ Regenerates everything in `data/clean/` from `data/raw/`.
 
 Built with D3.js. Four charts:
 
-1. Dual-axis line chart per game (Twitch viewers + Steam players + Trends score).
-2. Horizontal bar chart of lag days.
-3. Scatter plot of monthly Twitch viewers vs Steam players, colored by game.
-4. Vertical bar chart of post-peak player growth (log scale).
+1. Per-game timeline: three normalized series (Twitch viewers, Steam players, Trends score) on a shared axis with streamer event annotations.
+2. Gantt-style lag chart showing each game's Twitch peak and Steam peak on a 2018-2026 calendar.
+3. Vertical bar chart of post-peak Steam player growth on a log scale.
+4. Per-month scatter plot of Twitch viewers vs Steam players with pooled and split-by-game trend lines.
 
-Local preview:
+Local preview from the project root:
 
 ```bash
-cd viz
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Then open `http://localhost:8000/web/`.
